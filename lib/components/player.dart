@@ -7,31 +7,31 @@ import 'package:flame/components.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
 
 class PlayerBody extends BodyComponent with ContactCallbacks, DragCallbacks {
-  Vector2 position;
   late Vector2 originalPosition;
-  late Vector2 maxDistance = Vector2.all(10);
+  final double maxDistance = 15.0;
+
+  bool _throwPlayer = false;
+
+  double _elapseTimeToRemove = 0;
+  final double _timeToRemove = 10;
 
   // sprite
   // late PlayerComponent playerComponent;
 
-  PlayerBody({required this.position}) : super() {
+  PlayerBody({required this.originalPosition}) : super() {
     renderBody = true;
-    originalPosition = position;
   }
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-
-    // playerComponent = PlayerComponent(mapSize: mapSize);
-    // add(playerComponent);
   }
 
   @override
   Body createBody() {
     final shape = CircleShape()..radius = 2;
-    final bodyDef =
-        BodyDef(position: position, type: BodyType.kinematic, userData: this);
+    final bodyDef = BodyDef(
+        position: originalPosition, type: BodyType.kinematic, userData: this);
     FixtureDef fixtureDef =
         FixtureDef(shape, friction: 1, density: 0, restitution: 0);
     return world.createBody(bodyDef)..createFixture(fixtureDef);
@@ -49,18 +49,26 @@ class PlayerBody extends BodyComponent with ContactCallbacks, DragCallbacks {
 
   @override
   void update(double dt) {
+    if (_throwPlayer) {
+      if (_elapseTimeToRemove < _timeToRemove) {
+        _elapseTimeToRemove += dt;
+      } else if (_elapseTimeToRemove > _timeToRemove) {
+        removeFromParent();
+      }
+    }
+
     super.update(dt);
   }
 
   @override
   void onDragUpdate(DragUpdateEvent event) {
-    // con la resta de lso vectores A y B se obtiene un vector que va de A a B
+    // con la resta de los vectores A y B se obtiene un vector que va de A a B
     // con la magnitud/length se obtiene la distancia entre los vectores A y B
     // final distancePositions = (body.position - originalPosition).length;
     final distancePositions =
         (game.screenToWorld(event.canvasPosition) - originalPosition).length;
     print(distancePositions);
-    if (distancePositions < 15) {
+    if (distancePositions < maxDistance) {
       // body.setTransform(body.position + game.screenToWorld(event.delta), 0);
       body.setTransform(game.screenToWorld(event.canvasPosition), 0);
     } else {
@@ -79,7 +87,7 @@ class PlayerBody extends BodyComponent with ContactCallbacks, DragCallbacks {
           originalPosition +
               ((game.screenToWorld(event.canvasPosition) - originalPosition)
                       .normalized() *
-                  15),
+                  maxDistance),
           0);
     }
 
@@ -89,7 +97,10 @@ class PlayerBody extends BodyComponent with ContactCallbacks, DragCallbacks {
   @override
   void onDragEnd(DragEndEvent event) {
     body.setType(BodyType.dynamic);
-    body.applyForce((position - body.position) * 400);
+    body.applyForce((originalPosition - body.position) * 400);
+
+    _throwPlayer = true;
+
     super.onDragEnd(event);
   }
 }
