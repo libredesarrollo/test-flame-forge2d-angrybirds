@@ -5,6 +5,7 @@ import 'package:flame/sprite.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/components.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
+import 'package:testforgeangrybirds/utils/create_animation_by_limit.dart';
 
 class PlayerBody extends BodyComponent with ContactCallbacks, DragCallbacks {
   late Vector2 originalPosition;
@@ -16,7 +17,7 @@ class PlayerBody extends BodyComponent with ContactCallbacks, DragCallbacks {
   final double _timeToRemove = 10;
 
   // sprite
-  // late PlayerComponent playerComponent;
+  late PlayerComponent _playerComponent;
 
   PlayerBody({required this.originalPosition}) : super() {
     renderBody = true;
@@ -24,6 +25,9 @@ class PlayerBody extends BodyComponent with ContactCallbacks, DragCallbacks {
 
   @override
   Future<void> onLoad() async {
+    _playerComponent = PlayerComponent();
+    add(_playerComponent);
+
     await super.onLoad();
   }
 
@@ -98,25 +102,34 @@ class PlayerBody extends BodyComponent with ContactCallbacks, DragCallbacks {
   void onDragEnd(DragEndEvent event) {
     body.setType(BodyType.dynamic);
     body.applyForce((originalPosition - body.position) * 400);
-
+    _playerComponent.animation = _playerComponent.flyAnimation;
     _throwPlayer = true;
 
     super.onDragEnd(event);
   }
 }
 
-// class PlayerComponent extends SpriteAnimationComponent with DragCallbacks {
+class PlayerComponent extends SpriteAnimationComponent {
+  late SpriteAnimation idleAnimation, flyAnimation;
 
+  PlayerComponent() : super(anchor: Anchor.center, size: Vector2.all(10)) {
+    size = Vector2.all(10);
+    anchor = Anchor.center;
+  }
+  @override
+  onLoad() async {
+    final spriteImage = await Flame.images.load('birds.png');
+    final spriteSheet =
+        SpriteSheet(image: spriteImage, srcSize: Vector2.all(125));
 
-//   @override
-//   void onDragUpdate(DragUpdateEvent event) {
-//     final camera =
-//         game.firstChild<CameraComponent>()!; // gameRef.cameraComponent;
-//     // camera.moveBy(event.delta);
-//     camera.viewfinder.position += event.delta / camera.viewfinder.zoom;
+    // init animation
+    idleAnimation = spriteSheet.createAnimationByLimit(
+        xInit: 0, yInit: 0, step: 3, sizeX: 3, stepTime: .08);
+    flyAnimation = spriteSheet.createAnimationByLimit(
+        xInit: 1, yInit: 0, step: 3, sizeX: 3, stepTime: .08);
 
-//     position = camera.viewfinder.position;
+    animation = idleAnimation;
 
-//     super.onDragUpdate(event);
-//   }
-// }
+    return super.onLoad();
+  }
+}
