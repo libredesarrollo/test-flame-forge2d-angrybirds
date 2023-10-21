@@ -5,6 +5,7 @@ import 'package:flame/sprite.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/components.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
+import 'package:testforgeangrybirds/components/box.dart';
 import 'package:testforgeangrybirds/utils/create_animation_by_limit.dart';
 
 class PlayerBody extends BodyComponent with ContactCallbacks, DragCallbacks {
@@ -37,12 +38,19 @@ class PlayerBody extends BodyComponent with ContactCallbacks, DragCallbacks {
     final bodyDef = BodyDef(
         position: originalPosition, type: BodyType.kinematic, userData: this);
     FixtureDef fixtureDef =
-        FixtureDef(shape, friction: 1, density: 0, restitution: 0);
+        FixtureDef(shape, friction: 1, density: 5, restitution: 0);
     return world.createBody(bodyDef)..createFixture(fixtureDef);
   }
 
   @override
   void beginContact(Object other, Contact contact) {
+    print("aaaaaaa");
+    if (other is BoxBody) {
+      print("box " +
+          other.body.linearVelocity.toString() +
+          "  " +
+          other.body.linearVelocity.length2.toString());
+    }
     super.beginContact(other, contact);
   }
 
@@ -71,7 +79,7 @@ class PlayerBody extends BodyComponent with ContactCallbacks, DragCallbacks {
     // final distancePositions = (body.position - originalPosition).length;
     final distancePositions =
         (game.screenToWorld(event.canvasPosition) - originalPosition).length;
-    print(distancePositions);
+    // print(distancePositions);
     if (distancePositions < maxDistance) {
       // body.setTransform(body.position + game.screenToWorld(event.delta), 0);
       body.setTransform(game.screenToWorld(event.canvasPosition), 0);
@@ -101,7 +109,7 @@ class PlayerBody extends BodyComponent with ContactCallbacks, DragCallbacks {
   @override
   void onDragEnd(DragEndEvent event) {
     body.setType(BodyType.dynamic);
-    body.applyForce((originalPosition - body.position) * 400);
+    body.applyForce((originalPosition - body.position) * 400000);
     _playerComponent.animation = _playerComponent.flyAnimation;
     _throwPlayer = true;
 

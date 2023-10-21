@@ -18,14 +18,18 @@ class MyGame extends Forge2DGame
     with TapDetector, HasKeyboardHandlerComponents {
   PlayerBody? playerBody;
 
-  int _currentLevel = 0;
+  int _currentLevel = 1;
 
   double _boxTimer = 0.0;
   int _boxIndex = 0;
 
+  bool boxsAdded = false;
+
   MyGame() : super(gravity: Vector2(0, 40));
 
   void onTapDown(TapDownInfo info) {
+    if (!boxsAdded) return;
+
     if (playerBody == null || playerBody!.isRemoved) {
       playerBody =
           PlayerBody(originalPosition: screenToWorld(info.eventPosition.game));
@@ -46,19 +50,35 @@ class MyGame extends Forge2DGame
       if (_boxTimer >=
           box.getCurrentLevel(level: _currentLevel)[_boxIndex].timeToAdd) {
         final boxBody = box.BoxBody(
-            position:
-                box.getCurrentLevel(level: _currentLevel)[_boxIndex].position);
+            position: screenToWorld(
+                box.getCurrentLevel(level: _currentLevel)[_boxIndex].position));
         world.add(boxBody);
         _boxIndex++;
         _boxTimer = 0;
       }
       _boxTimer += dt;
+    } else {
+      boxsAdded = true;
     }
   }
 
   @override
   void update(double dt) {
     _addBoxs(dt);
+
+    // firstChild()
+    // chil
+    // print(world.children.query<box.BoxBody>().length);
+
+    // if (world.children.query<box.BoxBody>().length > 1) {
+    //   // print(world.children.query<box.BoxBody>()[0].greaterImpact);
+    // }
+    // https://www.darttutorial.org/dart-tutorial/dart-map-method/#:~:text=Introduction%20to%20the%20Dart%20map()%20method&text=The%20map()%20method%20iterates,()%20method%20on%20these%20objects.
+    if (world.children.query<box.BoxBody>().length ==
+        box.getCurrentLevel(level: _currentLevel).length) {
+      world.children.query<box.BoxBody>().where((b) => b.boxAdded);
+    }
+
     super.update(dt);
   }
 }
