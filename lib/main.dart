@@ -24,6 +24,7 @@ class MyGame extends Forge2DGame
   int _boxIndex = 0;
 
   bool boxsAdded = false;
+  double _totalBoxImpact = 0;
 
   MyGame() : super(gravity: Vector2(0, 40));
 
@@ -31,8 +32,9 @@ class MyGame extends Forge2DGame
     if (!boxsAdded) return;
 
     if (playerBody == null || playerBody!.isRemoved) {
-      playerBody =
-          PlayerBody(originalPosition: screenToWorld(info.eventPosition.game));
+      playerBody = PlayerBody(
+          originalPosition: screenToWorld(info.eventPosition.game),
+          parentFunctionOnRemove: totalBoxImpact);
       world.add(playerBody!);
     }
 
@@ -58,7 +60,7 @@ class MyGame extends Forge2DGame
       }
       _boxTimer += dt;
     } else {
-      boxsAdded = true;
+      // boxsAdded = true;
     }
   }
 
@@ -73,12 +75,27 @@ class MyGame extends Forge2DGame
     // if (world.children.query<box.BoxBody>().length > 1) {
     //   // print(world.children.query<box.BoxBody>()[0].greaterImpact);
     // }
-    // https://www.darttutorial.org/dart-tutorial/dart-map-method/#:~:text=Introduction%20to%20the%20Dart%20map()%20method&text=The%20map()%20method%20iterates,()%20method%20on%20these%20objects.
+
+    // *** verifica si todas las cajas fueron agregadas
     if (world.children.query<box.BoxBody>().length ==
-        box.getCurrentLevel(level: _currentLevel).length) {
-      world.children.query<box.BoxBody>().where((b) => b.boxAdded);
+            box.getCurrentLevel(level: _currentLevel).length &&
+        !boxsAdded) {
+      if (world.children
+          .query<box.BoxBody>()
+          .where((b) => !b.boxAdded)
+          .isEmpty) {
+        boxsAdded = true;
+      }
     }
 
     super.update(dt);
+  }
+
+  totalBoxImpact() {
+    // *** suma el total de todos los impactos a las cajas
+    world.children
+        .query<box.BoxBody>()
+        .forEach((b) => _totalBoxImpact = b.greaterImpact);
+    print("_totalBoxImpact      " + _totalBoxImpact.toString());
   }
 }

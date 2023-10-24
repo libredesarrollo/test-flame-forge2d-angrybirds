@@ -9,7 +9,8 @@ import 'package:testforgeangrybirds/components/box.dart';
 import 'package:testforgeangrybirds/utils/create_animation_by_limit.dart';
 
 class PlayerBody extends BodyComponent with ContactCallbacks, DragCallbacks {
-  late Vector2 originalPosition;
+  Vector2 originalPosition;
+  Function parentFunctionOnRemove;
   final double maxDistance = 15.0;
 
   bool _throwPlayer = false;
@@ -20,7 +21,9 @@ class PlayerBody extends BodyComponent with ContactCallbacks, DragCallbacks {
   // sprite
   late PlayerComponent _playerComponent;
 
-  PlayerBody({required this.originalPosition}) : super() {
+  PlayerBody(
+      {required this.originalPosition, required this.parentFunctionOnRemove})
+      : super() {
     renderBody = true;
   }
 
@@ -66,6 +69,7 @@ class PlayerBody extends BodyComponent with ContactCallbacks, DragCallbacks {
         _elapseTimeToRemove += dt;
       } else if (_elapseTimeToRemove > _timeToRemove) {
         removeFromParent();
+        parentFunctionOnRemove();
       }
     }
 
