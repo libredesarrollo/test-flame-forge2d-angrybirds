@@ -33,7 +33,7 @@ class MyGame extends Forge2DGame
 
     if (playerBody == null || playerBody!.isRemoved) {
       playerBody = PlayerBody(
-          originalPosition: screenToWorld(info.eventPosition.game),
+          originalPosition: screenToWorld(info.eventPosition.global),
           parentFunctionOnRemove: totalBoxImpact);
       world.add(playerBody!);
     }

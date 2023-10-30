@@ -12,6 +12,7 @@ class PlayerBody extends BodyComponent with ContactCallbacks, DragCallbacks {
   Vector2 originalPosition;
   Function parentFunctionOnRemove;
   final double maxDistance = 15.0;
+  final double maxDistance2 = 225.0;
 
   bool _throwPlayer = false;
 
@@ -41,7 +42,7 @@ class PlayerBody extends BodyComponent with ContactCallbacks, DragCallbacks {
     final bodyDef = BodyDef(
         position: originalPosition, type: BodyType.kinematic, userData: this);
     FixtureDef fixtureDef =
-        FixtureDef(shape, friction: 1, density: 5, restitution: 0);
+        FixtureDef(shape, friction: 1, density: 50, restitution: 0);
     return world.createBody(bodyDef)..createFixture(fixtureDef);
   }
 
@@ -82,9 +83,9 @@ class PlayerBody extends BodyComponent with ContactCallbacks, DragCallbacks {
     // con la magnitud/length se obtiene la distancia entre los vectores A y B
     // final distancePositions = (body.position - originalPosition).length;
     final distancePositions =
-        (game.screenToWorld(event.canvasPosition) - originalPosition).length;
+        (game.screenToWorld(event.canvasPosition) - originalPosition).length2;
     // print(distancePositions);
-    if (distancePositions < maxDistance) {
+    if (distancePositions < maxDistance2) {
       // body.setTransform(body.position + game.screenToWorld(event.delta), 0);
       body.setTransform(game.screenToWorld(event.canvasPosition), 0);
     } else {
